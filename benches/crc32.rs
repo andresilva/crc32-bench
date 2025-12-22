@@ -1,6 +1,6 @@
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use rand::{rngs::StdRng, Rng, SeedableRng};
-use std::hint::black_box;
+use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
+use rand::{Rng, SeedableRng, rngs::StdRng};
+use std::{hint::black_box, time::Duration};
 
 const SIZES: &[(usize, &str)] = &[
     (64, "64B"),
@@ -25,6 +25,7 @@ fn generate_data(size: usize) -> Vec<u8> {
 
 fn bench_crc32(c: &mut Criterion) {
     let mut group = c.benchmark_group("CRC32");
+    group.measurement_time(Duration::from_secs(10));
 
     for &(size, name) in SIZES {
         let data = generate_data(size);
@@ -52,6 +53,7 @@ fn bench_crc32(c: &mut Criterion) {
 
 fn bench_crc32c(c: &mut Criterion) {
     let mut group = c.benchmark_group("CRC32C");
+    group.measurement_time(Duration::from_secs(10));
 
     for &(size, name) in SIZES {
         let data = generate_data(size);
