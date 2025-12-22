@@ -1,6 +1,6 @@
 # CRC32 Benchmark Results
 
-Generated: 2025-12-22 12:16:29
+Generated: 2025-12-22 12:25:16
 
 CPU: AMD Ryzen 9 9950X3D
 
@@ -19,7 +19,7 @@ This report compares the throughput of various CRC32 implementations in Rust.
 
 ## CRC32
 
-<object type="image/svg+xml" data="crc32.svg">CRC32 Throughput</object>
+![CRC32 Throughput](crc32.svg)
 
 ### Throughput (GiB/s)
 
@@ -31,7 +31,7 @@ This report compares the throughput of various CRC32 implementations in Rust.
 
 ## CRC32C
 
-<object type="image/svg+xml" data="crc32c.svg">CRC32C Throughput</object>
+![CRC32C Throughput](crc32c.svg)
 
 ### Throughput (GiB/s)
 

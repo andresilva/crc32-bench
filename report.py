@@ -143,12 +143,60 @@ def generate_markdown_table(group_name: str, crate_data: dict) -> str:
     return "\n".join([header, separator] + rows)
 
 
+def generate_html_table(group_name: str, crate_data: dict) -> str:
+    """Generate an HTML table for benchmark results."""
+    all_sizes = set()
+    for crate_results in crate_data.values():
+        all_sizes.update(crate_results.keys())
+    sizes = sorted(all_sizes, key=size_to_bytes)
+
+    rows = ["<table>", "<thead><tr><th>Crate</th>"]
+    for size in sizes:
+        rows.append(f"<th>{size}</th>")
+    rows.append("</tr></thead><tbody>")
+
+    for crate_name in sorted(crate_data.keys()):
+        size_results = crate_data[crate_name]
+        rows.append(f"<tr><td><strong>{crate_name}</strong></td>")
+        for size in sizes:
+            if size in size_results:
+                size_bytes = size_to_bytes(size)
+                throughput = calc_throughput_gibs(size_bytes, size_results[size])
+                rows.append(f"<td>{throughput:.2f}</td>")
+            else:
+                rows.append("<td>-</td>")
+        rows.append("</tr>")
+
+    rows.append("</tbody></table>")
+    return "\n".join(rows)
+
+
 def generate_report(results: dict, output_dir: Path) -> None:
-    """Generate the full markdown report."""
-    report_lines = [
+    """Generate markdown report (for GitHub README) and HTML report (for GitHub Pages)."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Common header info
+    crates_table_md = """| Crate | Description |
+|-------|-------------|
+| [`crc`](https://crates.io/crates/crc) | Generic CRC library (software, table-based) |
+| [`crc-fast`](https://crates.io/crates/crc-fast) | SIMD-accelerated, supports all CRC variants |
+| [`crc32fast`](https://crates.io/crates/crc32fast) | SIMD-accelerated CRC32 |
+| [`crc32c`](https://crates.io/crates/crc32c) | Hardware-accelerated CRC32C (SSE4.2/ARM) |"""
+
+    crates_table_html = """<table>
+<thead><tr><th>Crate</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><a href="https://crates.io/crates/crc"><code>crc</code></a></td><td>Generic CRC library (software, table-based)</td></tr>
+<tr><td><a href="https://crates.io/crates/crc-fast"><code>crc-fast</code></a></td><td>SIMD-accelerated, supports all CRC variants</td></tr>
+<tr><td><a href="https://crates.io/crates/crc32fast"><code>crc32fast</code></a></td><td>SIMD-accelerated CRC32</td></tr>
+<tr><td><a href="https://crates.io/crates/crc32c"><code>crc32c</code></a></td><td>Hardware-accelerated CRC32C (SSE4.2/ARM)</td></tr>
+</tbody></table>"""
+
+    # Markdown report (GitHub README - static images)
+    md_lines = [
         "# CRC32 Benchmark Results",
         "",
-        f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        f"Generated: {timestamp}",
         "",
         "CPU: AMD Ryzen 9 9950X3D",
         "",
@@ -158,13 +206,38 @@ def generate_report(results: dict, output_dir: Path) -> None:
         "",
         "### Crates Tested",
         "",
-        "| Crate | Description |",
-        "|-------|-------------|",
-        "| [`crc`](https://crates.io/crates/crc) | Generic CRC library (software, table-based) |",
-        "| [`crc-fast`](https://crates.io/crates/crc-fast) | SIMD-accelerated, supports all CRC variants |",
-        "| [`crc32fast`](https://crates.io/crates/crc32fast) | SIMD-accelerated CRC32 |",
-        "| [`crc32c`](https://crates.io/crates/crc32c) | Hardware-accelerated CRC32C (SSE4.2/ARM) |",
+        crates_table_md,
         "",
+    ]
+
+    # HTML report (GitHub Pages - interactive SVGs)
+    html_lines = [
+        "<!DOCTYPE html>",
+        "<html lang=\"en\">",
+        "<head>",
+        "  <meta charset=\"UTF-8\">",
+        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+        "  <title>CRC32 Benchmark Results</title>",
+        "  <style>",
+        "    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }",
+        "    h1, h2, h3 { color: #333; }",
+        "    table { border-collapse: collapse; margin: 20px 0; }",
+        "    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: right; }",
+        "    th { background: #f6f8fa; text-align: left; }",
+        "    td:first-child { text-align: left; }",
+        "    object { display: block; max-width: 100%; margin: 20px 0; }",
+        "    a { color: #0366d6; }",
+        "    code { background: #f6f8fa; padding: 2px 6px; border-radius: 3px; }",
+        "  </style>",
+        "</head>",
+        "<body>",
+        "  <h1>CRC32 Benchmark Results</h1>",
+        f"  <p>Generated: {timestamp}</p>",
+        "  <p>CPU: AMD Ryzen 9 9950X3D</p>",
+        "  <h2>Summary</h2>",
+        "  <p>This report compares the throughput of various CRC32 implementations in Rust.</p>",
+        "  <h3>Crates Tested</h3>",
+        f"  {crates_table_html}",
     ]
 
     for group_name in sorted(results.keys()):
@@ -177,10 +250,11 @@ def generate_report(results: dict, output_dir: Path) -> None:
 
         generate_svg_plot(group_name, crate_data, svg_path)
 
-        report_lines.extend([
+        # Markdown: static image
+        md_lines.extend([
             f"## {group_name}",
             "",
-            f'<object type="image/svg+xml" data="{svg_filename}">{group_name} Throughput</object>',
+            f"![{group_name} Throughput]({svg_filename})",
             "",
             "### Throughput (GiB/s)",
             "",
@@ -188,11 +262,26 @@ def generate_report(results: dict, output_dir: Path) -> None:
             "",
         ])
 
-    report_lines.append("")
+        # HTML: interactive object
+        html_lines.extend([
+            f"  <h2>{group_name}</h2>",
+            f'  <object type="image/svg+xml" data="{svg_filename}">{group_name} Throughput</object>',
+            "  <h3>Throughput (GiB/s)</h3>",
+            f"  {generate_html_table(group_name, crate_data)}",
+        ])
 
-    report_path = output_dir / "BENCHMARKS.md"
-    report_path.write_text("\n".join(report_lines))
-    print(f"Generated: {report_path}")
+    md_lines.append("")
+    html_lines.extend(["</body>", "</html>"])
+
+    # Write markdown
+    md_path = output_dir / "BENCHMARKS.md"
+    md_path.write_text("\n".join(md_lines))
+    print(f"Generated: {md_path}")
+
+    # Write HTML
+    html_path = output_dir / "index.html"
+    html_path.write_text("\n".join(html_lines))
+    print(f"Generated: {html_path}")
 
 
 def main():
@@ -209,7 +298,9 @@ def main():
 
     generate_report(results, output_dir)
 
-    print(f"\nReport saved to {output_dir}/BENCHMARKS.md")
+    print(f"\nReports saved to {output_dir}/")
+    print(f"  - BENCHMARKS.md (GitHub README)")
+    print(f"  - index.html (GitHub Pages, interactive)")
 
 
 if __name__ == "__main__":
