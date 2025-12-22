@@ -96,6 +96,7 @@ def generate_svg_plot(group_name: str, crate_data: dict, output_path: Path) -> N
         width=900,
         height=500,
         explicit_size=True,
+        background="white",
     )
     chart.x_labels = sizes
 
@@ -149,6 +150,8 @@ def generate_report(results: dict, output_dir: Path) -> None:
         "",
         f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         "",
+        "CPU: AMD Ryzen 9 9950X3D",
+        "",
         "## Summary",
         "",
         "This report compares the throughput of various CRC32 implementations in Rust.",
@@ -157,10 +160,10 @@ def generate_report(results: dict, output_dir: Path) -> None:
         "",
         "| Crate | Description |",
         "|-------|-------------|",
-        "| `crc` | Generic CRC library (software, table-based) |",
-        "| `crc-fast` | SIMD-accelerated, supports all CRC variants |",
-        "| `crc32fast` | SIMD-accelerated CRC32 |",
-        "| `crc32c` | Hardware-accelerated CRC32C (SSE4.2/ARM) |",
+        "| [`crc`](https://crates.io/crates/crc) | Generic CRC library (software, table-based) |",
+        "| [`crc-fast`](https://crates.io/crates/crc-fast) | SIMD-accelerated, supports all CRC variants |",
+        "| [`crc32fast`](https://crates.io/crates/crc32fast) | SIMD-accelerated CRC32 |",
+        "| [`crc32c`](https://crates.io/crates/crc32c) | Hardware-accelerated CRC32C (SSE4.2/ARM) |",
         "",
     ]
 
@@ -177,46 +180,13 @@ def generate_report(results: dict, output_dir: Path) -> None:
         report_lines.extend([
             f"## {group_name}",
             "",
-            f"![{group_name} Throughput]({svg_filename})",
+            f'<object type="image/svg+xml" data="{svg_filename}">{group_name} Throughput</object>',
             "",
             "### Throughput (GiB/s)",
             "",
             generate_markdown_table(group_name, crate_data),
             "",
         ])
-
-    # Find the fastest for each category
-    report_lines.extend([
-        "## Conclusions",
-        "",
-    ])
-
-    for group_name in sorted(results.keys()):
-        crate_data = results[group_name]
-        if not crate_data:
-            continue
-
-        # Find best performer at largest size
-        all_sizes = set()
-        for crate_results in crate_data.values():
-            all_sizes.update(crate_results.keys())
-        largest_size = max(all_sizes, key=size_to_bytes)
-        largest_bytes = size_to_bytes(largest_size)
-
-        best_crate = None
-        best_throughput = 0
-        for crate_name, size_results in crate_data.items():
-            if largest_size in size_results:
-                throughput = calc_throughput_gibs(largest_bytes, size_results[largest_size])
-                if throughput > best_throughput:
-                    best_throughput = throughput
-                    best_crate = crate_name
-
-        if best_crate:
-            report_lines.append(
-                f"- **{group_name}**: `{best_crate}` is fastest at {largest_size} "
-                f"with {best_throughput:.2f} GiB/s"
-            )
 
     report_lines.append("")
 
