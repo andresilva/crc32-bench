@@ -23,8 +23,8 @@ fn generate_data(size: usize) -> Vec<u8> {
     data
 }
 
-fn bench_crc32_ieee(c: &mut Criterion) {
-    let mut group = c.benchmark_group("CRC32-IEEE");
+fn bench_crc32(c: &mut Criterion) {
+    let mut group = c.benchmark_group("CRC32");
 
     for &(size, name) in SIZES {
         let data = generate_data(size);
@@ -77,5 +77,5 @@ fn bench_crc32c(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_crc32_ieee, bench_crc32c);
+criterion_group!(benches, bench_crc32, bench_crc32c);
 criterion_main!(benches);
