@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 
 import pygal
-from pygal.style import CleanStyle
+from pygal.style import Style
 
 
 def is_size_dir(name: str) -> bool:
@@ -83,9 +83,16 @@ def generate_svg_plot(group_name: str, crate_data: dict, output_path: Path) -> N
         all_sizes.update(crate_results.keys())
     sizes = sorted(all_sizes, key=size_to_bytes)
 
-    style = CleanStyle
+    custom_style = Style(
+        background="white",
+        plot_background="rgba(240, 240, 240, 0.7)",
+        foreground="rgba(0, 0, 0, 0.9)",
+        foreground_strong="rgba(0, 0, 0, 0.9)",
+        foreground_subtle="rgba(0, 0, 0, 0.5)",
+        colors=("#3366cc", "#dc3912", "#ff9900", "#109618", "#990099"),
+    )
     chart = pygal.Line(
-        style=style,
+        style=custom_style,
         title=f"{group_name} Throughput Comparison",
         x_title="Data Size",
         y_title="Throughput (GiB/s)",
@@ -96,7 +103,6 @@ def generate_svg_plot(group_name: str, crate_data: dict, output_path: Path) -> N
         width=900,
         height=500,
         explicit_size=True,
-        background="white",
     )
     chart.x_labels = sizes
 
