@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRC32 Benchmark Results</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+    h1, h2, h3 { color: #333; }
+    table { border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: right; }
+    th { background: #f6f8fa; text-align: left; }
+    td:first-child { text-align: left; }
+    object { display: block; max-width: 100%; margin: 20px 0; }
+    a { color: #0366d6; }
+    code { background: #f6f8fa; padding: 2px 6px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>CRC32 Benchmark Results</h1>
+  <p>Generated: 2025-12-23 20:02:08</p>
+  <p>CPU: AMD Ryzen 9 9950X3D</p>
+  <h2>Summary</h2>
+  <p>This report compares the throughput of various CRC32 implementations in Rust.</p>
+  <h3>Crates Tested</h3>
+  <table>
+<thead><tr><th>Crate</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><a href="https://crates.io/crates/crc"><code>crc</code></a></td><td>Generic CRC library (software, table-based)</td></tr>
+<tr><td><a href="https://crates.io/crates/crc-fast"><code>crc-fast</code></a></td><td>SIMD-accelerated, supports all CRC variants</td></tr>
+<tr><td><a href="https://crates.io/crates/crc32fast"><code>crc32fast</code></a></td><td>SIMD-accelerated CRC32</td></tr>
+<tr><td><a href="https://crates.io/crates/crc32c"><code>crc32c</code></a></td><td>Hardware-accelerated CRC32C (SSE4.2/ARM)</td></tr>
+</tbody></table>
+  <h2>CRC32</h2>
+  <object type="image/svg+xml" data="crc32.svg">CRC32 Throughput</object>
+  <h3>Throughput (GiB/s)</h3>
+  <table>
+<thead><tr><th>Crate</th>
+<th>64B</th>
+<th>256B</th>
+<th>512B</th>
+<th>1KB</th>
+<th>2KB</th>
+<th>4KB</th>
+<th>16KB</th>
+<th>64KB</th>
+<th>512KB</th>
+<th>1MB</th>
+<th>4MB</th>
+</tr></thead><tbody>
+<tr><td><strong>crc</strong></td>
+<td>0.87</td>
+<td>0.69</td>
+<td>0.67</td>
+<td>0.66</td>
+<td>0.65</td>
+<td>0.65</td>
+<td>0.65</td>
+<td>0.64</td>
+<td>0.64</td>
+<td>0.64</td>
+<td>0.64</td>
+</tr>
+<tr><td><strong>crc-fast</strong></td>
+<td>4.25</td>
+<td>11.03</td>
+<td>19.95</td>
+<td>36.47</td>
+<td>58.69</td>
+<td>68.42</td>
+<td>78.22</td>
+<td>80.02</td>
+<td>81.68</td>
+<td>81.36</td>
+<td>79.96</td>
+</tr>
+<tr><td><strong>crc32fast</strong></td>
+<td>6.83</td>
+<td>18.27</td>
+<td>19.41</td>
+<td>19.99</td>
+<td>20.30</td>
+<td>20.46</td>
+<td>20.43</td>
+<td>20.57</td>
+<td>20.61</td>
+<td>20.61</td>
+<td>20.50</td>
+</tr>
+</tbody></table>
+  <h2>CRC32C</h2>
+  <object type="image/svg+xml" data="crc32c.svg">CRC32C Throughput</object>
+  <h3>Throughput (GiB/s)</h3>
+  <table>
+<thead><tr><th>Crate</th>
+<th>64B</th>
+<th>256B</th>
+<th>512B</th>
+<th>1KB</th>
+<th>2KB</th>
+<th>4KB</th>
+<th>16KB</th>
+<th>64KB</th>
+<th>512KB</th>
+<th>1MB</th>
+<th>4MB</th>
+</tr></thead><tbody>
+<tr><td><strong>crc</strong></td>
+<td>0.85</td>
+<td>0.69</td>
+<td>0.66</td>
+<td>0.65</td>
+<td>0.65</td>
+<td>0.65</td>
+<td>0.65</td>
+<td>0.64</td>
+<td>0.64</td>
+<td>0.64</td>
+<td>0.64</td>
+</tr>
+<tr><td><strong>crc-fast</strong></td>
+<td>23.31</td>
+<td>41.39</td>
+<td>72.28</td>
+<td>72.12</td>
+<td>79.94</td>
+<td>79.50</td>
+<td>81.48</td>
+<td>81.77</td>
+<td>82.09</td>
+<td>81.45</td>
+<td>79.77</td>
+</tr>
+<tr><td><strong>crc32c</strong></td>
+<td>6.72</td>
+<td>9.03</td>
+<td>8.80</td>
+<td>9.06</td>
+<td>9.09</td>
+<td>9.35</td>
+<td>9.61</td>
+<td>10.10</td>
+<td>10.27</td>
+<td>10.22</td>
+<td>10.01</td>
+</tr>
+</tbody></table>
+</body>
+</html>
